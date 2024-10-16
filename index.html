@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeechToText</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        #errorMsg {
+            color: red;
+            margin-top: 10px;
+        }
+        select {
+            display: block;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h4>Voice to Text</h4>
+
+        <!-- Language Selector -->
+        <div class="input-field col s12">
+            <select id="languageSelector">
+                <option value="ja-JP" selected>Japanese (日本語)</option>
+                <option value="en-US">English (United States)</option>
+                <option value="es-ES">Spanish (España)</option>
+                <option value="fr-FR">French (Français)</option>
+                <option value="de-DE">German (Deutsch)</option>
+                <option value="it-IT">Italian (Italiano)</option>
+                <option value="ko-KR">Korean (한국어)</option>
+                <!-- Add more options as needed -->
+            </select>
+            <label for="languageSelector">Choose Language</label>
+        </div>
+
+        <button id="startButton" class="btn waves-effect waves-light blue">
+            <i class="material-icons left">mic</i>
+            Start Voice Input
+        </button>
+        <div id="output" class="card-panel teal lighten-4"></div>
+        <div id="errorMsg"></div>
+    </div>
+
+    <!-- Import Materialize JS and its dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Materialize components
+            const elems = document.querySelectorAll('select');
+            M.FormSelect.init(elems);
+        });
+
+        const startButton = document.getElementById('startButton');
+        const outputDiv = document.getElementById('output');
+        const errorMsg = document.getElementById('errorMsg');
+        const languageSelector = document.getElementById('languageSelector');
+
+        // Check if SpeechRecognition is supported
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || window.mozSpeechRecognition || window.msSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+
+            // Change the language dynamically based on selection
+            languageSelector.addEventListener('change', () => {
+                recognition.lang = languageSelector.value;
+            });
+
+            recognition.onstart = () => {
+                startButton.textContent = 'Listening...';
+                startButton.classList.add('pulse');  // Add pulse effect while listening
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                outputDiv.textContent = transcript;
+            };
+
+            recognition.onend = () => {
+                startButton.textContent = 'Start Voice Input';
+                startButton.classList.remove('pulse');  // Remove pulse effect
+            };
+
+            startButton.addEventListener('click', () => {
+                recognition.lang = languageSelector.value;  // Ensure correct language is set
+                recognition.start();
+            });
+        } else {
+            // Show an error message if the browser doesn't support SpeechRecognition
+            errorMsg.textContent = 'Sorry, your browser does not support Speech Recognition. Please try using Chrome or another supported browser.';
+            startButton.disabled = true; // Disable the button if not supported
+            startButton.classList.add('disabled');  // Add disabled class from Materialize
+        }
+    </script>
+</body>
+</html>
